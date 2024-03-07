@@ -48,7 +48,10 @@ section).
     Now pick one of the rules and explain, in informal English, what
     the rule is supposed to do.
 
-      > ...your answer here...
+      > AAT is the rule for Array-At, which returns the type when calling 
+        the array at function for the value in the array 'a' 
+        at the index 'i'. This is a part of a type-checking function, so 
+        the function will return the type of the element. 
 
     _This problem is getting you ready for Parts A and C of the homework._
 
