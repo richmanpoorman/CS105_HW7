@@ -1431,30 +1431,30 @@ fun typeof (e, globals, functions, formals) =
 
 (* function [[ty]], checks type of expression given $\itenvs$ ((prototype)) 348 *)
       | ty (AAT (a, i))        = 
-        let val tau_a = ty a
-            val tau_i = ty i 
-        in if eqType (tau_i, INTTY) then arrayTy (ty a) 
-            else raise TypeError ("Array index must be of type INT, not " ^
-                                    "of type " ^ typeString tau_i)
-        end 
+            let val tau_a = ty a
+                val tau_i = ty i 
+            in if eqType (tau_i, INTTY) then arrayTy (ty a) 
+                else raise TypeError ("Array index must be of type INT, not " ^
+                                        "of type " ^ typeString tau_i)
+            end 
       | ty (APUT (a, i, e))    = 
-        let val tau_val = ty (AAT (a, i))
-            val tau_e   = ty e
-        in if eqType (tau_val, tau_e) then (ARRAYTY tau_e)
-            else raise TypeError ("Given type " ^ typeString tau_e ^ 
-                "does not match Array type " ^ typeString tau_val)
-        end 
+            let val tau_val = ty (AAT (a, i))
+                val tau_e   = ty e
+            in if eqType (tau_val, tau_e) then (ARRAYTY tau_e)
+                else raise TypeError ("Given type " ^ typeString tau_e ^ 
+                    "does not match Array type " ^ typeString tau_val)
+            end 
       | ty (AMAKE (len, init)) = 
-        let val tau_len  = ty len 
-            val tau_init = ty init
-        in if eqType (tau_len, INTTY) then (ARRAYTY tau_init)
-            else raise TypeError ("Array size must be of type INT, not " ^
-                                    "of type " ^ typeString tau_len)
-        end 
+            let val tau_len  = ty len 
+                val tau_init = ty init
+            in if eqType (tau_len, INTTY) then (ARRAYTY tau_init)
+                else raise TypeError ("Array size must be of type INT, not " ^
+                                        "of type " ^ typeString tau_len)
+            end 
       | ty (ASIZE a)           =    
-        let val tau_val = arrayTy (ty a)
-        in INTTY 
-        end 
+            let val tau_val = arrayTy (ty a)
+            in INTTY 
+            end 
 (* type declarations for consistency checking *)
 val _ = op eqType  : ty      * ty      -> bool
 val _ = op eqTypes : ty list * ty list -> bool
