@@ -1,0 +1,15 @@
+(* put *)
+
+(check‐function‐type array-put (array ty * int * ty ‐> array ty))
+
+(* at *)
+
+(check‐function‐type array-at (array ty * int ‐> ty))
+
+(* make *)
+
+(check‐function‐type make-array (int * ty ‐> array ty))
+
+(* size *)
+
+(check‐function‐type array-size (array ty ‐> int))
