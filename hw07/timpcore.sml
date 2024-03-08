@@ -1336,7 +1336,36 @@ fun testEquals (NUM n,   NUM n')   = n = n'
 (* type checking for \timpcore 338a *)
 fun typeof (e, globals, functions, formals) =
   let (* function [[ty]], checks type of expression given $\itenvs$ 338b *)
+      fun arrayTy (ARRAYTY tau) = tau 
+        | arrayTy tau           = raise TypeError ("Expected an Array Type, " ^
+                                    "but given " ^ typeString tau)
       fun ty (LITERAL v) = INTTY
+        | ty (AMAKE (e1, e2)) = 
+            let val tau_e1 = ty e1 
+                val tau_e2 = ty e2 
+            in if eqType (tau_e1, INTTY) then (ARRAYTY tau_e2)
+               else raise TypeError ("Array size must be of type INT, not " ^
+                                     "of type " ^ typeString tau_e1)
+            end 
+        | ty (AAT (a, i)) = 
+            let val tau_a = ty a
+                val tau_i = ty i 
+            in if eqType (tau_i, INTTY) then arrayTy (ty a) 
+               else raise TypeError ("Array index must be of type INT, not " ^
+                                     "of type " ^ typeString tau_i)
+            end 
+        | ty (APUT (e1, e2, e3)) = 
+            let val tau_val = ty (AAT (e1, e2))
+                val tau_e3  = ty e3
+            in if eqType (tau_val, tau_e3) then (ARRAYTY tau_e3)
+               else raise TypeError ("Given type " ^ typeString tau_e3 ^ 
+                    "does not match Array type " ^ typeString tau_val)
+            end 
+        | ty (ASIZE a) = 
+            let val tau_val = arrayTy (ty a)
+            in INTTY 
+            end 
+            
       (* function [[ty]], checks type of expression given $\itenvs$ 339a *)
         | ty (VAR x) = (find (x, formals) handle NotFound _ => find (x, globals)
                                                                                )
@@ -1417,7 +1446,7 @@ fun typeof (e, globals, functions, formals) =
                                         " but got " ^ intString (length
                                                                    actualtypes))
                  (* type declarations for consistency checking *)
-                 val _ = op badParameter : int * ty list * ty list -> 'a
+                 val _ = op badParameter : int * ty list * ty list -> 'a   
       (* type declarations for consistency checking *)
       val _ = op badParameter : int * ty list * ty list -> 'a
              in  if eqTypes (actualtypes, formaltypes) then
