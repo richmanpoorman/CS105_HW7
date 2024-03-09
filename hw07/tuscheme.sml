@@ -1644,7 +1644,12 @@ val _ = op eqTypes : tyex list * tyex list -> bool
 (*****************************************************************)
 
 (* type checking for {\tuscheme} ((prototype)) 366 *)
-fun typeof _ = raise LeftAsExercise "typeof"
+fun typeof (e, delta, gamma) =
+    let 
+        fun ty (LITERAL v) = find (v, gamma)
+          | ty _ = raise LeftAsExercise "typeof"
+    in ty e
+    end 
 fun typdef _ = raise LeftAsExercise "typdef"
 (* type declarations for consistency checking *)
 val _ = op eqKind  : kind      * kind      -> bool
