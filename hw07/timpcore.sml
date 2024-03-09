@@ -1440,7 +1440,7 @@ fun typeof (e, globals, functions, formals) =
       | ty (APUT (a, i, e))    = 
             let val tau_val = ty (AAT (a, i))
                 val tau_e   = ty e
-            in if eqType (tau_val, tau_e) then (ARRAYTY tau_e)
+            in if eqType (tau_val, tau_e) then tau_e
                 else raise TypeError ("Given type " ^ typeString tau_e ^ 
                     "does not match Array type " ^ typeString tau_val)
             end 
