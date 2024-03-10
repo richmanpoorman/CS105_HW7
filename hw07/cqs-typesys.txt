@@ -116,7 +116,7 @@ Here are two important things to keep in mind as you read this section:
         3. `((@ length sym) syms)`
         4. `((length sym) syms)`
 
-        > ...your answer here...
+        > 
 
 
     (b) You are given a function `positive?` of type `(int -> bool)`.
@@ -124,7 +124,7 @@ Here are two important things to keep in mind as you read this section:
         `(forall ('a 'b 'c) (('b -> 'c) ('a -> 'b) -> ('a -> 'c)))`,
         what code do you write to compose `positive?` with `not`?
 
-        >
+        > 
 
     (c) In testing, we sometimes use a three-argument function `third`
         that ignores its first two arguments and returns its third
@@ -136,7 +136,7 @@ Here are two important things to keep in mind as you read this section:
         type) in Typed μScheme.  You will need to use both `type-lambda` and
         `lambda`.
 
-        >
+        > 
 
     _You are ready to start Part B of the homework._
 

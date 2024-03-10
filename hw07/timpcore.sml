@@ -1436,7 +1436,7 @@ fun typeof (e, globals, functions, formals) =
             in if eqType (tau_i, INTTY) then arrayTy (ty a) 
                 else raise TypeError ("Array index must be of type INT, not " ^
                                         "of type " ^ typeString tau_i)
-            end 
+            end
       | ty (APUT (a, i, e))    = 
             let val tau_val = ty (AAT (a, i))
                 val tau_e   = ty e

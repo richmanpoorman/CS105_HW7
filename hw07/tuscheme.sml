@@ -1659,7 +1659,6 @@ fun typeof (e, Delta, Gamma) =
                     of (tau1, tau2) =>  
                         if eqType (tau1, tau2) then tau2
                      else raise IllTyped)
-    
             | ty IFX _ _ _ = raise LeftAsExercise "typeof"
             | ty WHILEX (e1, e2) = raise LeftAsExercise "typeof"
             | ty BEGIN e1 = raise LeftAsExercise "typeof"
