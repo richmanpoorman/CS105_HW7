@@ -1645,6 +1645,7 @@ val _ = op eqTypes : tyex list * tyex list -> bool
 
 (* type checking for {\tuscheme} ((prototype)) 366 *)
 fun typeof (e, Delta, Gamma) =
+<<<<<<< Updated upstream
     let fun ty (LITERAL v) = (case (typeof (v, Gamma))
                     of tau1 =>
                         if eqType (tau1, inttype) then tau1
@@ -1669,31 +1670,60 @@ fun typeof (e, Delta, Gamma) =
             | ty TYLAMBDA (x, e) = raise LeftAsExercise "typeof"
             | ty TYAPPLY (e1, e2) = raise LeftAsExercise "typeof"
         in  
+=======
+    let fun literal (NUM x)       = inttype 
+          | literal (BOOLV b)     = booltype 
+          | literal (SYM s)       = symtype 
+          | literal NIL           = listtype tvA 
+          | literal (PAIR (a, b)) = listtype (literal a)
+          | literal (CLOSURE _)   = raise LeftAsExercise "typeof"
+          | literal (PRIMITIVE _) = raise LeftAsExercise "typeof"
+          | literal (ARRAY _)     = raise LeftAsExercise "typeof"
+        fun ty (LITERAL v) = literal v
+          | ty (IFX (e1, e2, e3)) =
+                (case (ty e1, ty e2, ty e3) 
+                   of (TYCON "bool", tau1, tau2) => 
+                        if eqType (tau1, tau2) then tau1 
+                        else raise TypeError ("Ill-typed If branches")
+                    | _ => raise TypeError ("Ill-typed conditional"))
+          | ty (VAR x) = find (x, Gamma)
+          | ty (SET (x, e)) = 
+                (case (find (x, Gamma), ty e)
+                   of (tauX, tauE) =>  
+                        if eqType (tauX, tauE) then tauE
+                    else raise TypeError ("Ill-typed Set"))
+          | ty (APPLY (e, es)) = 
+                (case (ty e, map ty es) 
+                   of (FUNTY (param, tau), ls) =>
+                        let fun isParamTypes (x :: xs) (y :: ys) = 
+                                eqType (x, y) andalso isParamTypes xs ys
+                              | isParamTypes [] [] = true 
+                              | isParamTypes _ _   = false
+                        in if isParamTypes param ls then tau 
+                           else raise TypeError ("Ill-typed parameters")
+                        end 
+                    | _ => raise TypeError ("Not given a function to apply"))
+          | ty (WHILEX (e1, e2)) = raise LeftAsExercise "typeof"
+          | ty (BEGIN e1) = raise LeftAsExercise "typeof"
+          | ty (LETX (letType, bs, e)) = raise LeftAsExercise "typeof"
+          | ty (LETRECX (bs, e)) = raise LeftAsExercise "typeof"
+          | ty (LAMBDA (ps, e)) = raise LeftAsExercise "typeof"
+          | ty (TYLAMBDA (ns, e)) = raise LeftAsExercise "typeof"
+          | ty (TYAPPLY (e, tys)) = raise LeftAsExercise "typeof"
+        in ty e
+>>>>>>> Stashed changes
         end
 
 fun typdef (e, Delta, Gamma) = 
-    let fun ty (VAL x, e) = 
-             if not (isbound (x, globals)) then
-               let val tau  = typeof (e, globals, functions, emptyEnv)
-               in  (bind (x, tau, globals), functions, typeString tau)
-               end
-             else
-               let val tau' = find (x, globals)
-                   val tau  = typeof (e, globals, functions, emptyEnv)
-               in  if eqType (tau, tau') then
-                     (globals, functions, typeString tau)
-                   else
-
-                  (* raise [[TypeError]] with message about redefinition 342a *)
-                     raise TypeError ("Global variable " ^ x ^ " of type " ^
-                                                               typeString tau' ^
-                                      " may not be redefined with type " ^
-                                                                 typeString tau)
-               end
-    
-    | ty _  = raise LeftAsExercise "typdef"
-    in ty e
-    end 
+    let fun ty (VAL (x, e))              = 
+                let val tau = typeof (e, Delta, Gamma) 
+                in (bind (x, tau, Gamma), typeString tau)
+                end 
+          | ty (VALREC (x, tau, e))      = raise LeftAsExercise "typdef"
+          | ty (DEFINE (f, tau, lambda)) = raise LeftAsExercise "typdef"
+          | ty (EXP e)                   = ty (VAL ("it", e))
+    in ty e 
+    end
 (* type declarations for consistency checking *)
 val _ = op eqKind  : kind      * kind      -> bool
 val _ = op eqKinds : kind list * kind list -> bool
@@ -2587,9 +2617,9 @@ val _ = op values    : value ref env
 val _ = op primBasis : basis
   in  (kinds, types, values)
   end
+val primitiveBasis = primBasis
 val predefined_included = false
 val predefs   = if not predefined_included then [] else
-
                  [ ";  predefined {\\tuscheme} functions 359b "
                  , "(val list1 (type-lambda ['a] (lambda ([x : 'a])"
                  ,
