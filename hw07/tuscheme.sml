@@ -1677,10 +1677,36 @@ fun typeof (e, Delta, Gamma) =
                            else raise TypeError ("Ill-typed parameters")
                         end 
                     | _ => raise TypeError ("Not given a function to apply"))
+          | ty (LETX (LET, bs, e)) = 
+                let val names = map fst bs 
+                    val types = map (ty o snd) bs
+                in typeof (e, Delta, Gamma <+> (mkEnv (names, types)))
+                end 
+          | ty (LETX (LETSTAR, bs, e)) = 
+                (case bs 
+                   of (x :: xs) => ty (LETX (LET, [x], LETX (LETSTAR, xs, e)))
+                    | [] => ty e)
+          | ty (LETRECX (bs, e)) = 
+                let val names      = map (fst o fst) bs 
+                    val types      = map (snd o fst) bs 
+                    val exps       = map snd bs 
+                    val isAllKinds = List.foldl 
+                                        (fn (t, acc) => acc orelse 
+                                            kindof (t, Delta) = TYPE)
+                                        false 
+                                        types 
+                    val newGamma   = Gamma <+> (mkEnv (names, types))
+                    fun expMatch (e1 :: es) (t :: ts) = 
+                            eqType (typeof (e1, Delta, newGamma), t) 
+                                andalso expMatch es ts 
+                      | expMatch [] [] = true 
+                      | expMatch _ _ = false
+                in if isAllKinds andalso expMatch exps types then 
+                        typeof (e, Delta, newGamma)
+                   else raise TypeError ("Type mismatch in let clauses")
+                end
           | ty (WHILEX (e1, e2)) = raise LeftAsExercise "typeof"
           | ty (BEGIN e1) = raise LeftAsExercise "typeof"
-          | ty (LETX (letType, bs, e)) = raise LeftAsExercise "typeof"
-          | ty (LETRECX (bs, e)) = raise LeftAsExercise "typeof"
           | ty (LAMBDA (ps, e)) = raise LeftAsExercise "typeof"
           | ty (TYLAMBDA (ns, e)) = raise LeftAsExercise "typeof"
           | ty (TYAPPLY (e, tys)) = raise LeftAsExercise "typeof"
