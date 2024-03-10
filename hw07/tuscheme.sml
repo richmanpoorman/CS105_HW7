@@ -1686,11 +1686,9 @@ fun typeof (e, Delta, Gamma) =
           | ty (LAMBDA (ps, e)) = 
                 let val names      = map fst ps 
                     val types      = map snd ps 
-                    val isAllKinds = List.foldl 
-                                        (fn (t, acc) => acc orelse 
-                                            kindof (t, Delta) = TYPE)
-                                        false 
-                                        types 
+                    val isAllKinds = List.exists 
+                                        (fn (t) => kindof (t, Delta) = TYPE) 
+                                        types
                     val newGamma   = Gamma <+> (mkEnv (names, types))
                 in if isAllKinds then typeof (e, Delta, newGamma)
                    else raise TypeError ("Parameters have wrong types")
@@ -1713,11 +1711,9 @@ fun typeof (e, Delta, Gamma) =
                 let val names      = map (fst o fst) bs 
                     val types      = map (snd o fst) bs 
                     val exps       = map snd bs 
-                    val isAllKinds = List.foldl 
-                                        (fn (t, acc) => acc orelse 
-                                            kindof (t, Delta) = TYPE)
-                                        false 
-                                        types 
+                    val isAllKinds = List.exists 
+                                        (fn (t) => kindof (t, Delta) = TYPE) 
+                                        types
                     val newGamma   = Gamma <+> (mkEnv (names, types))
                     fun expMatch (e1 :: es) (t :: ts) = 
                             eqType (typeof (e1, Delta, newGamma), t) 
@@ -1728,16 +1724,33 @@ fun typeof (e, Delta, Gamma) =
                         typeof (e, Delta, newGamma)
                    else raise TypeError ("Type mismatch in let clauses")
                 end
-          | ty (TYLAMBDA (ns, e)) =  raise LeftAsExercise "typeof"
-          | ty (TYAPPLY (e, tys)) = raise LeftAsExercise "typeof"
+          | ty (TYLAMBDA (ns, e)) = 
+                let val freeVars = freetyvarsGamma Gamma
+                    fun notFreeIn key = List.exists 
+                            (fn (k) => k = key)
+                            freeVars
+                    val allNotIn = List.all notFreeIn ns
+                    fun addToKinds (n :: ns) = (n, TYPE) :: addToKinds ns 
+                      | addToKinds []        = Delta
+                in if allNotIn then 
+                        FORALL (ns, typeof (e, addToKinds ns, Gamma))
+                   else raise TypeError ("Not all given names are free")
+                end
+          | ty (TYAPPLY (e, tys)) = 
+                let val isAllKinds = List.exists 
+                                        (fn (t) => kindof (t, Delta) = TYPE) 
+                                        tys
+                in if isAllKinds then instantiate (ty e, tys, Delta) 
+                   else raise TypeError "Not given all types"
+                end
         in ty e
         end
 fun typdef (e, Delta, Gamma) = 
-    let fun ty (VAL (x, e))              = 
+    let fun ty (VAL (x, e)) = 
                 let val tau = typeof (e, Delta, Gamma) 
                 in (bind (x, tau, Gamma), typeString tau)
                 end 
-          | ty (VALREC (x, tau, e))      = 
+          | ty (VALREC (x, tau, e)) = 
                 let val isKind = kindof (tau, Delta) = TYPE 
                     val newEnv = if isKind then bind (x, tau, Gamma)
                                  else raise TypeError ("Binding is not a Type")
@@ -1748,7 +1761,7 @@ fun typdef (e, Delta, Gamma) =
                 let val types = map snd params 
                 in ty (VALREC (f, FUNTY (types, tau), LAMBDA (params, e)))
                 end
-          | ty (EXP e)                   = ty (VAL ("it", e))
+          | ty (EXP e) = ty (VAL ("it", e))
     in ty e 
     end
 (* type declarations for consistency checking *)
