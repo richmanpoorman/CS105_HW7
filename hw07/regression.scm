@@ -81,11 +81,17 @@
 ;; step 12
     ;; Lambda
     ;; (lambda ([x1 : tyex1] … [xn : tyexn]) e)
-;; (check-type (lambda (x y) (+ x y)) int)
-;; (check-type (lambda ([x : bool] [y : bool]) (or x y)) bool)
-;; (check-type-error (lambda (x y) (+ x y)))
-;; (check-type-error (lambda ([x : bool] [y : int]) (or x y)))
+(check-type (lambda ([x : int] [y : int]) (+ x y)) (int int -> int))
+(check-type (lambda ([x : bool] [y : bool]) ( if x y y)) (bool bool -> bool))
+(check-type-error (lambda ([x : int] [y : bool]) (if x y y)))
+(check-type-error (lambda ([x : int] [y : bool]) (+ x y y)))
 
+;; ;; step 13 
+;;     ;; Set
+(check-type (lambda ([x : int]) (set x 1)) (int -> int))
+(check-type (lambda ([y : bool]) (set y #t)) (bool -> bool))
+(check-type-error (lambda ([x : bool]) (set x 1)))
+(check-type-error (lambda ([x : int]) (set x #t)))
 
 ;; step 14 
     ;; Let STAR!
@@ -95,14 +101,11 @@
 (check-type-error (let* ((x #t) (y #f))  (+ x y)))
 
 ;; step 15
-    ;; LetRec
-    ;; (letrec [([x1 : tyex1] e1)
-    ;;      … 
-    ;;      ([xn : tyexn] en)] e)
+;;     LetRec
+;;     (letrec [([x1 : tyex1] e1)
+;;          … 
+;;          ([xn : tyexn] en)] e)
+;; (check-type (let ((x 1) (y 2)) (+ x y)) int)
 
-;;     (letrec [([x1 : int] (lambda () x1))] (+ x1 x2))
-
-;; ;; (check-type (letrec (([x : int] [y : int]) (+ x y))) int)
-;; ;; ;; (check-type (letrec ([x : bool] [y : bool]) (if y x y)) bool)
-;; ;; ;; (check-type-error (letrec ([x : int] [y : bool]) (or x y)))
-;; ;; (check-type-error (letrec ([x : int] [y : bool]) (+ x y)))
+;; (check-type (letrec ((x 1) (y 2)) (+ x y)) int)
+;; (check-type (letrec ((x 1) (y 2)) (+ x y)) int)
