@@ -1645,32 +1645,6 @@ val _ = op eqTypes : tyex list * tyex list -> bool
 
 (* type checking for {\tuscheme} ((prototype)) 366 *)
 fun typeof (e, Delta, Gamma) =
-<<<<<<< Updated upstream
-    let fun ty (LITERAL v) = (case (typeof (v, Gamma))
-                    of tau1 =>
-                        if eqType (tau1, inttype) then tau1
-                        else if eqType (tau1, symtype) then tau1
-                        else if eqType (tau1, (listtype ty)) then tau1
-                        else
-                        raise IllTyped
-                | _ => raise IllTyped)
-            | ty VAR x = find (x, Gamma)
-            | ty SET (x, e) = 
-                (case (typeof (x, Gamma), typeof (e, Gamma))
-                    of (tau1, tau2) =>  
-                        if eqType (tau1, tau2) then tau2
-                     else raise IllTyped)
-            | ty IFX _ _ _ = raise LeftAsExercise "typeof"
-            | ty WHILEX (e1, e2) = raise LeftAsExercise "typeof"
-            | ty BEGIN e1 = raise LeftAsExercise "typeof"
-            | ty APPLY (e1, e2) = raise LeftAsExercise "typeof"
-            | ty LETX (x, e) = raise LeftAsExercise "typeof"
-            | ty LETRECX (x, e) = raise LeftAsExercise "typeof"
-            | ty LAMBDA (x, e) = raise LeftAsExercise "typeof"
-            | ty TYLAMBDA (x, e) = raise LeftAsExercise "typeof"
-            | ty TYAPPLY (e1, e2) = raise LeftAsExercise "typeof"
-        in  
-=======
     let fun literal (NUM x)       = inttype 
           | literal (BOOLV b)     = booltype 
           | literal (SYM s)       = symtype 
@@ -1711,9 +1685,7 @@ fun typeof (e, Delta, Gamma) =
           | ty (TYLAMBDA (ns, e)) = raise LeftAsExercise "typeof"
           | ty (TYAPPLY (e, tys)) = raise LeftAsExercise "typeof"
         in ty e
->>>>>>> Stashed changes
         end
-
 fun typdef (e, Delta, Gamma) = 
     let fun ty (VAL (x, e))              = 
                 let val tau = typeof (e, Delta, Gamma) 
