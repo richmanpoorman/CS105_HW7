@@ -1645,14 +1645,20 @@ val _ = op eqTypes : tyex list * tyex list -> bool
 
 (* type checking for {\tuscheme} ((prototype)) 366 *)
 fun typeof (e, Delta, Gamma) =
-    let fun literal (NUM x)       = inttype 
-          | literal (BOOLV b)     = booltype 
-          | literal (SYM s)       = symtype 
-          | literal NIL           = listtype tvA 
-          | literal (PAIR (a, b)) = listtype (literal a)
-          | literal (CLOSURE _)   = raise LeftAsExercise "typeof"
-          | literal (PRIMITIVE _) = raise LeftAsExercise "typeof"
-          | literal (ARRAY _)     = raise LeftAsExercise "typeof"
+    let fun literal (NUM x)         = inttype 
+          | literal (BOOLV b)       = booltype 
+          | literal (SYM s)         = symtype 
+          | literal NIL             = listtype tvA 
+          | literal (PAIR (a, NIL)) = listtype (literal a)
+          | literal (PAIR (a, bs))   = 
+                let val tau    = literal a 
+                    val bsType = literal bs
+                in if eqType (listtype tau, bsType) then bsType
+                   else raise TypeError ("List is not monotyped")
+                end 
+          | literal (CLOSURE _)     = raise LeftAsExercise "typeof"
+          | literal (PRIMITIVE _)   = raise LeftAsExercise "typeof"
+          | literal (ARRAY _)       = raise LeftAsExercise "typeof"
         fun ty (LITERAL v) = literal v
           | ty (IFX (e1, e2, e3)) =
                 (case (ty e1, ty e2, ty e3) 
@@ -1661,11 +1667,6 @@ fun typeof (e, Delta, Gamma) =
                         else raise TypeError ("Ill-typed If branches")
                     | _ => raise TypeError ("Ill-typed conditional"))
           | ty (VAR x) = find (x, Gamma)
-          | ty (SET (x, e)) = 
-                (case (find (x, Gamma), ty e)
-                   of (tauX, tauE) =>  
-                        if eqType (tauX, tauE) then tauE
-                    else raise TypeError ("Ill-typed Set"))
           | ty (APPLY (e, es)) = 
                 (case (ty e, map ty es) 
                    of (FUNTY (param, tau), ls) =>
@@ -1682,6 +1683,28 @@ fun typeof (e, Delta, Gamma) =
                     val types = map (ty o snd) bs
                 in typeof (e, Delta, Gamma <+> (mkEnv (names, types)))
                 end 
+          | ty (LAMBDA (ps, e)) = 
+                let val names      = map fst ps 
+                    val types      = map snd ps 
+                    val isAllKinds = List.foldl 
+                                        (fn (t, acc) => acc orelse 
+                                            kindof (t, Delta) = TYPE)
+                                        false 
+                                        types 
+                    val newGamma   = Gamma <+> (mkEnv (names, types))
+                in if isAllKinds then typeof (e, Delta, newGamma)
+                   else raise TypeError ("Parameters have wrong types")
+                end
+          | ty (SET (x, e)) = 
+                (case (find (x, Gamma), ty e)
+                   of (tauX, tauE) =>  
+                        if eqType (tauX, tauE) then tauE
+                    else raise TypeError ("Ill-typed Set"))
+          | ty (WHILEX (e1, e2)) = 
+                (case (ty e1, ty e2) 
+                   of (TYCON "bool", tau) => unittype
+                    | _ => raise TypeError ("Conditional is not a boolean"))
+          | ty (BEGIN es) = List.foldl (fn (e, acc) => ty e) unittype es 
           | ty (LETX (LETSTAR, bs, e)) = 
                 (case bs 
                    of (x :: xs) => ty (LETX (LET, [x], LETX (LETSTAR, xs, e)))
@@ -1705,10 +1728,7 @@ fun typeof (e, Delta, Gamma) =
                         typeof (e, Delta, newGamma)
                    else raise TypeError ("Type mismatch in let clauses")
                 end
-          | ty (WHILEX (e1, e2)) = raise LeftAsExercise "typeof"
-          | ty (BEGIN e1) = raise LeftAsExercise "typeof"
-          | ty (LAMBDA (ps, e)) = raise LeftAsExercise "typeof"
-          | ty (TYLAMBDA (ns, e)) = raise LeftAsExercise "typeof"
+          | ty (TYLAMBDA (ns, e)) =  raise LeftAsExercise "typeof"
           | ty (TYAPPLY (e, tys)) = raise LeftAsExercise "typeof"
         in ty e
         end
@@ -1717,8 +1737,17 @@ fun typdef (e, Delta, Gamma) =
                 let val tau = typeof (e, Delta, Gamma) 
                 in (bind (x, tau, Gamma), typeString tau)
                 end 
-          | ty (VALREC (x, tau, e))      = raise LeftAsExercise "typdef"
-          | ty (DEFINE (f, tau, lambda)) = raise LeftAsExercise "typdef"
+          | ty (VALREC (x, tau, e))      = 
+                let val isKind = kindof (tau, Delta) = TYPE 
+                    val newEnv = if isKind then bind (x, tau, Gamma)
+                                 else raise TypeError ("Binding is not a Type")
+                    val tau    = typeof (e, Delta, newEnv)
+                in (newEnv, typeString tau)
+                end
+          | ty (DEFINE (f, tau, (params, e))) = 
+                let val types = map snd params 
+                in ty (VALREC (f, FUNTY (types, tau), LAMBDA (params, e)))
+                end
           | ty (EXP e)                   = ty (VAL ("it", e))
     in ty e 
     end
