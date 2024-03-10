@@ -116,7 +116,8 @@ Here are two important things to keep in mind as you read this section:
         3. `((@ length sym) syms)`
         4. `((length sym) syms)`
 
-        > 
+        > 3, but I believe that the @ length sym should be in square brackets
+          as the book puts square brackets (might not matter)
 
 
     (b) You are given a function `positive?` of type `(int -> bool)`.
@@ -124,7 +125,7 @@ Here are two important things to keep in mind as you read this section:
         `(forall ('a 'b 'c) (('b -> 'c) ('a -> 'b) -> ('a -> 'c)))`,
         what code do you write to compose `positive?` with `not`?
 
-        > 
+        > ([@ o int bool bool] not positive)
 
     (c) In testing, we sometimes use a three-argument function `third`
         that ignores its first two arguments and returns its third
@@ -136,7 +137,9 @@ Here are two important things to keep in mind as you read this section:
         type) in Typed μScheme.  You will need to use both `type-lambda` and
         `lambda`.
 
-        > 
+        > (val third 
+            (type-lambda ['a 'b 'c]
+                (lambda ([f : 'a 'b 'c -> 'c]) c ) ))
 
     _You are ready to start Part B of the homework._
 
@@ -155,30 +158,38 @@ interpreter.
         ; (a)
         (if #t 1 #f)
 
-        >
+        > The expression is not well typed, as the if can return an int if true
+          or a bool if false (the cases don't have the same type)
 
         ; (b)
         (let ([x 1]
               [y 2])
            (+ x y))
 
-        >
+        > The expression has type int, as x is an int, y is an int, and since
+          x and y both are ints, then the (+ x y) is also type int
 
         ; (c)
         (lambda ([x : int]) x)
 
-        >
+        > The expression has type (int -> int), as x is of type int, which is 
+          of kind int :: *, with x being of type int, the returned x is of 
+          type int, so the lambda is of type (int -> int)
 
         ; (d)
         (lambda ([x : 'a]) x)
 
-        >
+        > The expression is not well typed, as the type 'a is not defined
 
         ; (e)
         (type-lambda ['a] (lambda ([x : 'a]) x))
 
-        >
-  
+        > The expression is of type (foreach ['a] ('a -> 'a)), as 'a is a 
+          free type variable, which is of kind :: *, so the lambda has type  
+          'a which can be used, and since x is of type 'a, and the lambda 
+          returns x, the lambda returns type 'a, so the type of the lambda is 
+          ('a -> 'a)
+        
     _You are almost ready for Part D._
 
 
@@ -203,25 +214,23 @@ interpreter.
 
     (a) To type-check IF(e1, e2, e3), we will use functions:
 
-        - <function-name>, to <do what?>
-        - <function-name>, to <do what?>
-        - ...
-        ...
+        - 'typeof' to recursively typecheck e1, e2, e3
+        - 'eqType' to ensure that e1 is a boolean, and e2 and e3 have 
+          the same types
 
     (b) To type-check WHILE(e1, e2), we will use functions:
 
-        - <function-name>, to <do what?>
-        - <function-name>, to <do what?>
-        - ...
-        ...
+        - 'typeof' to recursively typecheck e1 and e2 
+        - 'eqType' to make sure that type of e1 is a boolean
 
 
     (c) To type-check LETX (LET, binds, e), we will use functions: 
 
-        - <function-name>, to <do what?>
-        - <function-name>, to <do what?>
-        - ...
-        ...
+        - 'typeof' to recurseivly typecheck e1...en (ei) and e (with new env)
+        - 'bind' to bind x1...xn (xi) to t1...tn (ti) [from binds] in the
+           enviornment to evaluate e with typeof
+            - Can also use 'mkEnv' with '<+>' to bind new types into the 
+              enviornment all at once
 
 
 
