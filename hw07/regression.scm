@@ -153,8 +153,10 @@
 
 ;; step 17
     ;; TyApply
-;; (val listApp '(1 2 3))
-;; (check-type (+ 1 listApp) (int list))
+(val id (type-lambda ['a] (lambda ([n : 'a]) n)))
+(check-type ([@ id int] 3) int)
 
 ;; step 17
     ;; TyLambda
+(val id (type-lambda ['a] (lambda ([n : 'a]) n)))
+(check-type id (forall ['a]('a -> 'a)))
