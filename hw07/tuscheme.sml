@@ -1690,7 +1690,8 @@ fun typeof (e, Delta, Gamma) =
                                         (fn (t) => kindof (t, Delta) = TYPE) 
                                         types
                     val newGamma   = Gamma <+> (mkEnv (names, types))
-                in if isAllKinds then typeof (e, Delta, newGamma)
+                in if isAllKinds then 
+                        FUNTY (types, typeof (e, Delta, newGamma))
                    else raise TypeError ("Parameters have wrong types")
                 end
           | ty (SET (x, e)) = 
@@ -1708,29 +1709,25 @@ fun typeof (e, Delta, Gamma) =
                    of (x :: xs) => ty (LETX (LET, [x], LETX (LETSTAR, xs, e)))
                     | [] => ty e)
           | ty (LETRECX (bs, e)) = 
-                let val names      = map (fst o fst) bs 
-                    val types      = map (snd o fst) bs 
-                    val exps       = map snd bs 
-                    val isAllKinds = List.exists 
-                                        (fn (t) => kindof (t, Delta) = TYPE) 
-                                        types
-                    val newGamma   = Gamma <+> (mkEnv (names, types))
+                let val names    = map (fst o fst) bs 
+                    val types    = map (snd o fst) bs 
+                    val exps     = map snd bs 
+                    val allFree  = map (fn (t) => kindof (t, Delta)) types
+                    val newGamma = Gamma <+> (mkEnv (names, types))
                     fun expMatch (e1 :: es) (t :: ts) = 
                             eqType (typeof (e1, Delta, newGamma), t) 
                                 andalso expMatch es ts 
                       | expMatch [] [] = true 
                       | expMatch _ _ = false
-                in if isAllKinds andalso expMatch exps types then 
-                        typeof (e, Delta, newGamma)
+                in if expMatch exps types then typeof (e, Delta, newGamma)
                    else raise TypeError ("Type mismatch in let clauses")
                 end
           | ty (TYLAMBDA (ns, e)) = 
                 let val freeVars = freetyvarsGamma Gamma
-                    fun notFreeIn key = List.exists 
-                            (fn (k) => k = key)
-                            freeVars
-                    val allNotIn = List.all notFreeIn ns
-                    fun addToKinds (n :: ns) = (n, TYPE) :: addToKinds ns 
+                    val allNotIn = List.all 
+                            (fn (n) => not (member n freeVars)) 
+                            ns
+                    fun addToKinds (n :: ns) = bind (n, TYPE, addToKinds ns)
                       | addToKinds []        = Delta
                 in if allNotIn then 
                         FORALL (ns, typeof (e, addToKinds ns, Gamma))
