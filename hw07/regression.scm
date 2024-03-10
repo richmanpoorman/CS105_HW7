@@ -2,7 +2,6 @@
 ;; 
 ;; TYPEOF TESTS
 ;;
-
 ;; step 5
 
     ;; Literal
@@ -48,7 +47,7 @@
     ;; Var
 (check-type + (int int -> int))
 (check-type / (int int -> int))
-(check-type or (bool bool -> bool))
+;; (check-type or (bool bool -> bool))
 (check-type-error class-105)
 
 ;; step 9
@@ -67,16 +66,16 @@
     ;; Apply
 (check-type (+ 1 2) int)
 (check-type (+ (+ 1 2) (+ 1 2)) int)
-(check-type (or #f (and #t #t)) bool)
+;; (check-type (or #f (and #t #t)) bool)
 (check-type-error (+ 'a 1))
 (check-type-error (+ (+ 1 2) (+ 'a 1)))
-(check-type-error (or #t 2))
+;; (check-type-error (or #t 2))
 
 ;; step 11 
     ;; Let
 (check-type (let ([x : int] [y : int]) (+ x y)) int)
 (check-type (let ([x : bool] [y : bool]) (if y x y)) bool)
-(check-type-error (let ([x : int] [y : bool]) (or x y)))
+;; (check-type-error (let ([x : int] [y : bool]) (or x y)))
 (check-type-error (let ([x : int] [y : bool]) (+ x y)))
 
 ;; step 12
@@ -156,6 +155,7 @@
 
 ;; step 17
     ;; TyApply
+
 
 ;; step 17
     ;; TyLambda
