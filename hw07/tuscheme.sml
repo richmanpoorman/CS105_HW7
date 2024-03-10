@@ -1644,13 +1644,47 @@ val _ = op eqTypes : tyex list * tyex list -> bool
 (*****************************************************************)
 
 (* type checking for {\tuscheme} ((prototype)) 366 *)
-fun typeof (e, delta, gamma) =
-    let 
-        fun ty (LITERAL v) = find (v, gamma)
-          | ty _ = raise LeftAsExercise "typeof"
+fun typeof (e, Delta, Gamma) =
+    let fun ty (LITERAL v) = (case (typeof (v, Gamma))
+                    of tau1 =>
+                        if eqType (tau1, inttype) then tau1
+                        else if eqType (tau1, symtype) then tau1
+                        else if eqType (tau1, (listtype ty)) then tau1
+                        else
+                        raise IllTyped
+                | _ => raise IllTyped)
+            | ty VAR x = find (x, Gamma)
+            | ty SET (x, e) = 
+                (case (typeof (x, Gamma), typeof (e, Gamma))
+                    of (tau1, tau2) =>  
+                        if eqType (tau1, tau2) then tau2
+                     else raise IllTyped)
+        in  
+        end
+
+fun typdef (e, Delta, Gamma) = 
+    let fun ty (VAL x, e) = 
+             if not (isbound (x, globals)) then
+               let val tau  = typeof (e, globals, functions, emptyEnv)
+               in  (bind (x, tau, globals), functions, typeString tau)
+               end
+             else
+               let val tau' = find (x, globals)
+                   val tau  = typeof (e, globals, functions, emptyEnv)
+               in  if eqType (tau, tau') then
+                     (globals, functions, typeString tau)
+                   else
+
+                  (* raise [[TypeError]] with message about redefinition 342a *)
+                     raise TypeError ("Global variable " ^ x ^ " of type " ^
+                                                               typeString tau' ^
+                                      " may not be redefined with type " ^
+                                                                 typeString tau)
+               end
+    
+    | ty _  = raise LeftAsExercise "typdef"
     in ty e
     end 
-fun typdef _ = raise LeftAsExercise "typdef"
 (* type declarations for consistency checking *)
 val _ = op eqKind  : kind      * kind      -> bool
 val _ = op eqKinds : kind list * kind list -> bool
@@ -2544,8 +2578,9 @@ val _ = op values    : value ref env
 val _ = op primBasis : basis
   in  (kinds, types, values)
   end
-val primitiveBasis = primBasis
-val predefs   = 
+val predefined_included = false
+val predefs   = if not predefined_included then [] else
+
                  [ ";  predefined {\\tuscheme} functions 359b "
                  , "(val list1 (type-lambda ['a] (lambda ([x : 'a])"
                  ,

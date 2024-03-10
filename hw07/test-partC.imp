@@ -1,15 +1,12 @@
-;; (* put *)
+(define bool arrPut_test ([index : int] [arr : array bool] [e : bool])
 
-(check‐function‐type array-put (array ty * int * ty ‐> array ty))
+        (array-put index arr e)
+)
+(check‐function‐type array-put ((array bool) * int * ty ‐> array ty))
 
-;; (* at *)
+
+(define bool arrAt_test ([index : int] [e : ty])
+        (array-at index e)
+)
 
 (check‐function‐type array-at (array ty * int ‐> ty))
-
-;; (* make *)
-
-(check‐function‐type make-array (int * ty ‐> array ty))
-
-;; (* size *)
-
-(check‐function‐type array-size (array ty -> int))
