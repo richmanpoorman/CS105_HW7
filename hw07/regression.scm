@@ -93,6 +93,29 @@
 (check-type-error (lambda ([x : bool]) (set x 1)))
 (check-type-error (lambda ([x : int]) (set x #t)))
 
+;; while
+(val x 1)
+(val y 1)
+(val x1 #t)
+(val y1 #t)
+(check-type (while (> x y) (+ x y)) unit)
+(check-type (while x1 (+ x y)) unit)
+(check-type-error  (while (> x1 y) (+ x y)))
+
+;;begin
+(val x 1)
+(val y 1)
+(check-type (begin (set x 1) (set y 1) (+ x y)) int)
+
+(val x1 #t)
+(val y2 #t)
+(check-type (begin (set x1 #f) (set y2 #t) (> x y)) bool)
+
+(val x1 #t)
+(val y2 #t)
+(check-type-error (begin (set x1 #f) (set y2 1) (> x y)))
+
+
 ;; step 14 
     ;; Let STAR!
 (check-type (let* ((x 1) (y 2)) (+ x y)) int)
@@ -105,7 +128,33 @@
 ;;     (letrec [([x1 : tyex1] e1)
 ;;          … 
 ;;          ([xn : tyexn] en)] e)
-;; (check-type (let ((x 1) (y 2)) (+ x y)) int)
+(check-type (letrec [([y : (int -> int)] 
+    (lambda ([x : int]) (set x 1)))] 
+                            (+ x 1)) int)
 
-;; (check-type (letrec ((x 1) (y 2)) (+ x y)) int)
-;; (check-type (letrec ((x 1) (y 2)) (+ x y)) int)
+;; step 16
+    ;; ValRec
+    ;; (val-rec [x : tyex] e)
+(val-rec [a : (int -> int)] (lambda ([b : int]) (set b 1)))
+(check-type a (int -> int))
+
+(val-rec [c : (bool -> bool)] (lambda ([b : bool]) (set b #t)))
+(check-type c (bool -> bool))
+
+;; step 16
+    ;; Define
+    ;; (define tyex f ([x1 : tyex1] … [xn : tyexn]) e)
+(define unit func1 ([b : bool] [n : int]) (while b (+ n 1)))
+(check-type (func1 #t 1) unit)
+
+(define int func2 ([x : int] [n : int]) (+ n x))
+(check-type (func2 1 2) int)
+(check-type-error (func2 1 #t))
+
+;; step 17
+    ;; TyApply
+;; (val listApp '(1 2 3))
+;; (check-type (+ 1 listApp) (int list))
+
+;; step 17
+    ;; TyLambda
