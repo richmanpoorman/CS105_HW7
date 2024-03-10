@@ -88,7 +88,10 @@
 
 ;; ;; step 13 
 ;;     ;; Set
-;; (check-type (set [x 1) int)
+(check-type (lambda ([x : int]) (set x 1)) (int -> int))
+(check-type (lambda ([y : bool]) (set y #t)) (bool -> bool))
+(check-type-error (lambda ([x : bool]) (set x 1)))
+(check-type-error (lambda ([x : int]) (set x #t)))
 
 ;; step 14 
     ;; Let STAR!
