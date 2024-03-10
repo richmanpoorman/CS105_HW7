@@ -78,4 +78,19 @@
 ;; (check-type-error (let ([x : int] [y : bool]) (or x y)))
 (check-type-error (let ((x #t) (y #f))  (+ x y)))
 
+;; step 14 
+    ;; Let STAR!
+(check-type (let* ((x 1) (y 2)) (+ x y)) int)
+(check-type (let* ((x #t) (y #f)) (if y x y)) bool)
+;; (check-type-error (let* ([x : int] [y : bool]) (or x y)))
+(check-type-error (let* ((x #t) (y #f))  (+ x y)))
 
+;; step 15
+    ;; LetRec
+    ;; (letrec [([x1 : tyex1] e1)
+    ;;      … 
+    ;;      ([xn : tyexn] en)] e)
+(check-type (letrec ((x 1) (y 2)) (+ x y)) int)
+(check-type (letrec ((x #t) (y #f)) (if y x y)) bool)
+;; (check-type-error (letrec ([x : int] [y : bool]) (or x y)))
+(check-type-error (letrec ((x #t) (y #f))  (+ x y)))
