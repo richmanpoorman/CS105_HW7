@@ -155,8 +155,21 @@
     ;; TyApply
 (val id (type-lambda ['a] (lambda ([n : 'a]) n)))
 (check-type ([@ id int] 3) int)
+(check-type ([@ id bool] #t) bool)
+(check-type ([@ null? bool] '(#t #f #f)) bool)
+
+(val curry 
+  (type-lambda ['a 'b 'c]
+   (lambda ([f : ('a 'b -> 'c)])
+     (lambda ([x : 'a]) 
+       (lambda ([y : 'b]) (f x y))))))
+(check-type  ([@ curry int int bool] <) (int -> (int -> bool)))
 
 ;; step 17
     ;; TyLambda
-(val id (type-lambda ['a] (lambda ([n : 'a]) n)))
 (check-type id (forall ['a]('a -> 'a)))
+
+(val id2 (type-lambda ['a 'b] (lambda ([n : 'a]) n)))
+(check-type id2 (forall ['a 'b]('a -> 'a)))
+
+(check-type curry (forall ['a 'b 'c] (('a 'b -> 'c) -> ('a -> ('b -> 'c)))))
