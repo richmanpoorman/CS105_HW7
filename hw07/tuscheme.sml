@@ -1670,13 +1670,8 @@ fun typeof (e, Delta, Gamma) =
           | ty (APPLY (e, es)) = 
                 (case (ty e, map ty es) 
                    of (FUNTY (param, tau), ls) =>
-                        let fun isParamTypes (x :: xs) (y :: ys) = 
-                                eqType (x, y) andalso isParamTypes xs ys
-                              | isParamTypes [] [] = true 
-                              | isParamTypes _ _   = false
-                        in if isParamTypes param ls then tau 
-                           else raise TypeError "Ill-typed parameters"
-                        end 
+                        if eqTypes (param, ls) then tau 
+                        else raise TypeError "Ill-typed parameters" 
                     | _ => raise TypeError "Not given a function to apply")
           | ty (LETX (LET, bs, e)) = 
                 let val names = map fst bs 
@@ -1686,13 +1681,9 @@ fun typeof (e, Delta, Gamma) =
           | ty (LAMBDA (ps, e)) = 
                 let val names      = map fst ps 
                     val types      = map snd ps 
-                    val isAllKinds = List.all 
-                                        (fn (t) => kindof (t, Delta) = TYPE) 
-                                        types
+                    val isAllKinds = map (fn (t) => kindof (t, Delta)) types
                     val newGamma   = Gamma <+> (mkEnv (names, types))
-                in if isAllKinds then 
-                        FUNTY (types, typeof (e, Delta, newGamma))
-                   else raise TypeError "Parameters have wrong types"
+                in FUNTY (types, typeof (e, Delta, newGamma))
                 end
           | ty (SET (x, e)) = 
                 (case (find (x, Gamma), ty e)
@@ -1714,11 +1705,9 @@ fun typeof (e, Delta, Gamma) =
                     val exps     = map snd bs 
                     val allFree  = map (fn (t) => kindof (t, Delta)) types
                     val newGamma = Gamma <+> (mkEnv (names, types))
-                    fun expMatch (e1 :: es) (t :: ts) = 
-                            eqType (typeof (e1, Delta, newGamma), t) 
-                                andalso expMatch es ts 
-                      | expMatch [] [] = true 
-                      | expMatch _ _ = false
+                    fun expMatch es ts = 
+                        eqTypes (map (fn (x) => typeof (x, Delta, newGamma)) es
+                                , ts)
                 in if expMatch exps types then typeof (e, Delta, newGamma)
                    else raise TypeError "Type mismatch in let clauses"
                 end
@@ -1734,11 +1723,8 @@ fun typeof (e, Delta, Gamma) =
                    else raise TypeError "Not all given names are free"
                 end
           | ty (TYAPPLY (e, tys)) = 
-                let val isAllKinds = List.all 
-                                        (fn (t) => kindof (t, Delta) = TYPE) 
-                                        tys
-                in if isAllKinds then instantiate (ty e, tys, Delta) 
-                   else raise TypeError "Not given all types"
+                let val isAllKinds = map (fn (t) => kindof (t, Delta)) tys
+                in instantiate (ty e, tys, Delta) 
                 end
         in ty e
         end
