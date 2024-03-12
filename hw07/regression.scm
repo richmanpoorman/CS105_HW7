@@ -173,3 +173,5 @@
 (check-type id2 (forall ['a 'b]('a -> 'a)))
 
 (check-type curry (forall ['a 'b 'c] (('a 'b -> 'c) -> ('a -> ('b -> 'c)))))
+
+(type-lambda ['a] (lambda ([n : 'a]) n))
