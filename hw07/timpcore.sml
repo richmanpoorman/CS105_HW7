@@ -1336,9 +1336,6 @@ fun testEquals (NUM n,   NUM n')   = n = n'
 (* type checking for \timpcore 338a *)
 fun typeof (e, globals, functions, formals) =
   let (* function [[ty]], checks type of expression given $\itenvs$ 338b *)
-      fun arrayTy (ARRAYTY tau) = tau 
-        | arrayTy tau           = raise TypeError ("Expected an Array Type, " ^
-                                    "but given " ^ typeString tau)
       fun ty (LITERAL v) = INTTY
       (* function [[ty]], checks type of expression given $\itenvs$ 339a *)
         | ty (VAR x) = (find (x, formals) handle NotFound _ => find (x, globals)
@@ -1430,31 +1427,24 @@ fun typeof (e, globals, functions, formals) =
              end
 
 (* function [[ty]], checks type of expression given $\itenvs$ ((prototype)) 348 *)
-      | ty (AAT (a, i))        = 
-            let val tau_a = ty a
-                val tau_i = ty i 
-            in if eqType (tau_i, INTTY) then arrayTy (ty a) 
-                else raise TypeError ("Array index must be of type INT, not " ^
-                                        "of type " ^ typeString tau_i)
-            end
-      | ty (APUT (a, i, e))    = 
-            let val tau_val = ty (AAT (a, i))
-                val tau_e   = ty e
-            in if eqType (tau_val, tau_e) then tau_e
-                else raise TypeError ("Given type " ^ typeString tau_e ^ 
-                    "does not match Array type " ^ typeString tau_val)
-            end 
+      | ty (AAT (a, i)) = 
+            (case (ty a, ty i) 
+               of (ARRAYTY tau, INTTY) => tau
+                | _ => raise TypeError "Array at given wrong types")
+      | ty (APUT (a, i, e)) = 
+            (case (ty a, ty i, ty e) 
+               of (ARRAYTY tau_val, INTTY, tau_e) => 
+                    if eqType (tau_val, tau_e) then tau_e 
+                    else raise TypeError "Value doesn't match array type"
+                | _ => raise TypeError "Array put given wrong types")
       | ty (AMAKE (len, init)) = 
-            let val tau_len  = ty len 
-                val tau_init = ty init
-            in if eqType (tau_len, INTTY) then ARRAYTY tau_init
-                else raise TypeError ("Array size must be of type INT, not " ^
-                                        "of type " ^ typeString tau_len)
-            end 
-      | ty (ASIZE a)           =    
-            let val tau_val = arrayTy (ty a)
-            in INTTY 
-            end 
+            (case (ty len, ty init) 
+               of (INTTY, tau) => ARRAYTY tau 
+                | _ => raise TypeError "Array make given wrong types")
+      | ty (ASIZE a) =    
+            (case (ty a) 
+               of (ARRAYTY tau) => INTTY 
+                | _ => raise TypeError "Array size given wrong types")
 (* type declarations for consistency checking *)
 val _ = op eqType  : ty      * ty      -> bool
 val _ = op eqTypes : ty list * ty list -> bool
