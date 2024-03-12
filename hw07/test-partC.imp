@@ -2,11 +2,11 @@
 
         (array-put index arr e)
 )
-(check‐function‐type array-put ((array bool) * int * ty ‐> array ty))
+(check-function-type array-put ((array bool) * int * ty -> array ty))
 
 
 (define bool arrAt_test ([index : int] [e : ty])
         (array-at index e)
 )
 
-(check‐function‐type array-at (array ty * int ‐> ty))
+(check-function-type array-at (array ty * int -> ty))

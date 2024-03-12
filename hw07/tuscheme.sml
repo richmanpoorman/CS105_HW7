@@ -1686,7 +1686,7 @@ fun typeof (e, Delta, Gamma) =
           | ty (LAMBDA (ps, e)) = 
                 let val names      = map fst ps 
                     val types      = map snd ps 
-                    val isAllKinds = List.exists 
+                    val isAllKinds = List.all 
                                         (fn (t) => kindof (t, Delta) = TYPE) 
                                         types
                     val newGamma   = Gamma <+> (mkEnv (names, types))
@@ -1734,7 +1734,7 @@ fun typeof (e, Delta, Gamma) =
                    else raise TypeError ("Not all given names are free")
                 end
           | ty (TYAPPLY (e, tys)) = 
-                let val isAllKinds = List.exists 
+                let val isAllKinds = List.all 
                                         (fn (t) => kindof (t, Delta) = TYPE) 
                                         tys
                 in if isAllKinds then instantiate (ty e, tys, Delta) 
