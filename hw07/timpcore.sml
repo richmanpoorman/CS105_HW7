@@ -1447,7 +1447,7 @@ fun typeof (e, globals, functions, formals) =
       | ty (AMAKE (len, init)) = 
             let val tau_len  = ty len 
                 val tau_init = ty init
-            in if eqType (tau_len, INTTY) then (ARRAYTY tau_init)
+            in if eqType (tau_len, INTTY) then ARRAYTY tau_init
                 else raise TypeError ("Array size must be of type INT, not " ^
                                         "of type " ^ typeString tau_len)
             end 
@@ -2057,7 +2057,7 @@ fun testIsGood (test, (tglobals, tfuns, vglobals, vfuns)) =
               true
             else
               failtest ["check-function-type failed: expected ", f,
-              	  " to have type ", funtyString tau,
+                " to have type ", funtyString tau,
                         ", but it has type ", funtyString tau']
         end handle TypeError msg =>
               failtest ["In (check-function-type ", f,

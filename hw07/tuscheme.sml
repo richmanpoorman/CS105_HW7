@@ -1654,7 +1654,7 @@ fun typeof (e, Delta, Gamma) =
                 let val tau    = literal a 
                     val bsType = literal bs
                 in if eqType (listtype tau, bsType) then bsType
-                   else raise TypeError ("List is not monotyped")
+                   else raise TypeError "List is not monotyped"
                 end 
           | literal (CLOSURE _)     = raise LeftAsExercise "typeof"
           | literal (PRIMITIVE _)   = raise LeftAsExercise "typeof"
@@ -1664,8 +1664,8 @@ fun typeof (e, Delta, Gamma) =
                 (case (ty e1, ty e2, ty e3) 
                    of (TYCON "bool", tau1, tau2) => 
                         if eqType (tau1, tau2) then tau1 
-                        else raise TypeError ("Ill-typed If branches")
-                    | _ => raise TypeError ("Ill-typed conditional"))
+                        else raise TypeError "Ill-typed If branches"
+                    | _ => raise TypeError "Ill-typed conditional")
           | ty (VAR x) = find (x, Gamma)
           | ty (APPLY (e, es)) = 
                 (case (ty e, map ty es) 
@@ -1675,9 +1675,9 @@ fun typeof (e, Delta, Gamma) =
                               | isParamTypes [] [] = true 
                               | isParamTypes _ _   = false
                         in if isParamTypes param ls then tau 
-                           else raise TypeError ("Ill-typed parameters")
+                           else raise TypeError "Ill-typed parameters"
                         end 
-                    | _ => raise TypeError ("Not given a function to apply"))
+                    | _ => raise TypeError "Not given a function to apply")
           | ty (LETX (LET, bs, e)) = 
                 let val names = map fst bs 
                     val types = map (ty o snd) bs
@@ -1692,17 +1692,17 @@ fun typeof (e, Delta, Gamma) =
                     val newGamma   = Gamma <+> (mkEnv (names, types))
                 in if isAllKinds then 
                         FUNTY (types, typeof (e, Delta, newGamma))
-                   else raise TypeError ("Parameters have wrong types")
+                   else raise TypeError "Parameters have wrong types"
                 end
           | ty (SET (x, e)) = 
                 (case (find (x, Gamma), ty e)
                    of (tauX, tauE) =>  
                         if eqType (tauX, tauE) then tauE
-                    else raise TypeError ("Ill-typed Set"))
+                    else raise TypeError "Ill-typed Set")
           | ty (WHILEX (e1, e2)) = 
                 (case (ty e1, ty e2) 
                    of (TYCON "bool", tau) => unittype
-                    | _ => raise TypeError ("Conditional is not a boolean"))
+                    | _ => raise TypeError "Conditional is not a boolean")
           | ty (BEGIN es) = List.foldl (fn (e, acc) => ty e) unittype es 
           | ty (LETX (LETSTAR, bs, e)) = 
                 (case bs 
@@ -1720,7 +1720,7 @@ fun typeof (e, Delta, Gamma) =
                       | expMatch [] [] = true 
                       | expMatch _ _ = false
                 in if expMatch exps types then typeof (e, Delta, newGamma)
-                   else raise TypeError ("Type mismatch in let clauses")
+                   else raise TypeError "Type mismatch in let clauses"
                 end
           | ty (TYLAMBDA (ns, e)) = 
                 let val freeVars = freetyvarsGamma Gamma
@@ -1731,7 +1731,7 @@ fun typeof (e, Delta, Gamma) =
                       | addToKinds []        = Delta
                 in if allNotIn then 
                         FORALL (ns, typeof (e, addToKinds ns, Gamma))
-                   else raise TypeError ("Not all given names are free")
+                   else raise TypeError "Not all given names are free"
                 end
           | ty (TYAPPLY (e, tys)) = 
                 let val isAllKinds = List.all 
@@ -1750,7 +1750,7 @@ fun typdef (e, Delta, Gamma) =
           | ty (VALREC (x, tau, e)) = 
                 let val isKind = kindof (tau, Delta) = TYPE 
                     val newEnv = if isKind then bind (x, tau, Gamma)
-                                 else raise TypeError ("Binding is not a Type")
+                                 else raise TypeError "Binding is not a Type"
                     val tau    = typeof (e, Delta, newEnv)
                 in (newEnv, typeString tau)
                 end
