@@ -158,6 +158,7 @@
 (check-type ([@ id int] 3) int)
 (check-type ([@ id bool] #t) bool)
 (check-type ([@ null? bool] '(#t #f #f)) bool)
+(check-type ([@ null? 'a] '(#t 1 #f)) bool)
 
 (val curry 
   (type-lambda ['a 'b 'c]
