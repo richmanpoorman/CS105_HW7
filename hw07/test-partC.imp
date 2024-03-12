@@ -3,25 +3,33 @@
 (define bool arrPut_testBOOL ([arr : (array bool)] [index : int] [e : bool])
         (array-put arr index e))
 
-(check-function-type arrPut_testBOOL ((array bool) int bool -> bool))
+        (check-function-type arrPut_testBOOL ((array bool) int bool -> bool))
 
 (define int arrPut_testINT ([arr : (array int)] [index : int] [e : int])
         (array-put arr index e))
 
-(check-function-type arrPut_testINT ((array int) int int -> int))
+        (check-function-type arrPut_testINT ((array int) int int -> int))
 
+(define (array bool) arrPut-boolArr-test 
+    ([arr : (array (array bool))] [index : int] [e : (array bool)])
+    (array-put arr index e))
 
+        (check-function-type arrPut-boolArr-test 
+            ((array (array bool)) int (array bool) -> (array bool)))
+
+        (check-type-error 
+            (array-put (make-array 2 (= 0 0)) 1 2))
 ;; (* at *)
 
 (define bool arrAt_testBOOL ([arr : (array bool)] [index : int])
         (array-at arr index))
 
-(check-function-type arrAt_testBOOL ((array bool) int -> bool))
+        (check-function-type arrAt_testBOOL ((array bool) int -> bool))
 
 (define int arrAt_testINT ([arr : (array int)] [index : int])
         (array-at arr index))
 
-(check-function-type arrAt_testINT ((array int) int -> int))
+        (check-function-type arrAt_testINT ((array int) int -> int))
 
 ;; (* make *)
 
