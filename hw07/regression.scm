@@ -91,7 +91,8 @@
 (check-type (lambda ([x : int] [y : int]) (+ x y)) (int int -> int))
 (check-type (lambda ([x : int] [y : bool]) x) (int bool -> int))
 (check-type (lambda ([x : bool] [y : bool]) (if x y y)) (bool bool -> bool))
-(check-type (lambda ([x : bool] [y : int] [z : int]) (if x y z)) (bool int int -> int))
+(check-type (lambda ([x : bool] [y : int] [z : int]) 
+                (if x y z)) (bool int int -> int))
 (check-type-error (lambda ([x : int] [y : bool]) (if x y y)))
 (check-type-error (lambda ([x : int] [y : bool]) (+ x y y)))
 ;; ;; step 13 

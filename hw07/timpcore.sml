@@ -1442,7 +1442,7 @@ fun typeof (e, globals, functions, formals) =
                of (INTTY, tau) => ARRAYTY tau 
                 | _ => raise TypeError "Array make given wrong types")
       | ty (ASIZE a) =    
-            (case (ty a) 
+            (case ty a
                of (ARRAYTY tau) => INTTY 
                 | _ => raise TypeError "Array size given wrong types")
 (* type declarations for consistency checking *)
