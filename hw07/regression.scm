@@ -139,7 +139,7 @@
 (check-type (letrec 
                 [([y : (int -> int)] 
                     (lambda ([x : int]) (+ x 1)))] 
-                (y 1)) int)
+                        (y 1)) int)
 
 ;; step 16
     ;; ValRec
