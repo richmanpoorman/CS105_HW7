@@ -69,6 +69,7 @@
 ;; (check-type (or #f (and #t #t)) bool)
 (check-type-error (+ 'a 1))
 (check-type-error (+ (+ 1 2) (+ 'a 1)))
+(check-type-error (1 2 3))
 ;; (check-type-error (or #t 2))
 
 ;; step 11 
@@ -77,6 +78,13 @@
 (check-type (let ((x #t) (y #f)) (if y x y)) bool)
 ;; (check-type-error (let ([x : int] [y : bool]) (or x y)))
 (check-type-error (let ((x #t) (y #f))  (+ x y)))
+(check-type-error (let ((x 1) (y x)) x))
+
+(check-type (let* ((x 1) (y x) (z y)) (* z y)) int)
+(check-type (let* ((x (if #t #f #f)) (y x)) y) bool)
+(check-type-error (let* ((x (if 1 2 3))) x))
+(check-type-error (let* ((x y) (y 1)) x))
+(check-type-error (let* ((x (if (< 0 x) x (- 0 x))) x)))
 
 ;; step 12
     ;; Lambda
@@ -95,26 +103,26 @@
 (check-type-error (lambda ([x : int]) (set x #t)))
 
 ;; while
-(val x 1)
-(val y 1)
-(val x1 #t)
-(val y1 #t)
-(check-type (while (> x y) (+ x y)) unit)
-(check-type (while x1 (+ x y)) unit)
-(check-type-error  (while (> x1 y) (+ x y)))
+(val whileX 1)
+(val whileY 1)
+(val whileX1 #t)
+(val whileY1 #t)
+(check-type (while (> 1 1) (+ 1 1)) unit)
+(check-type (while whileX1 (+ 1 1)) unit)
+(check-type-error  (while (> #t 1) (+ 1 1)))
 
 ;;begin
-(val x 1)
-(val y 1)
-(check-type (begin (set x 1) (set y 1) (+ x y)) int)
+(val setX 1)
+(val setY 1)
+(check-type (begin (set setX 1) (set setY 1) (+ setX setY)) int)
 
-(val x1 #t)
-(val y2 #t)
-(check-type (begin (set x1 #f) (set y2 #t) (> x y)) bool)
+(val setX1 #t)
+(val setY1 #t)
+(check-type (begin (set setX1 #f) (set setY1 #t) (> 1 1)) bool)
 
-(val x1 #t)
-(val y2 #t)
-(check-type-error (begin (set x1 #f) (set y2 1) (> x y)))
+(set setX1 #t)
+(set setY1 #t)
+(check-type-error (begin (set setX1 #f) (set setY1 1) (> 1 1)))
 
 
 ;; step 14 
@@ -129,9 +137,10 @@
 ;;     (letrec [([x1 : tyex1] e1)
 ;;          … 
 ;;          ([xn : tyexn] en)] e)
-(check-type (letrec [([y : (int -> int)] 
-    (lambda ([x : int]) (set x 1)))] 
-                            (+ x 1)) int)
+(check-type (letrec 
+                [([y : (int -> int)] 
+                    (lambda ([x : int]) (+ x 1)))] 
+                (y 1)) int)
 
 ;; step 16
     ;; ValRec
@@ -158,7 +167,7 @@
 (check-type ([@ id int] 3) int)
 (check-type ([@ id bool] #t) bool)
 (check-type ([@ null? bool] '(#t #f #f)) bool)
-(check-type ([@ null? 'a] '(#t 1 #f)) bool)
+(check-type-error ([@ null? 'a] '(#t 1 #f)))
 
 (val curry 
   (type-lambda ['a 'b 'c]
