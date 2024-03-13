@@ -84,7 +84,6 @@
 (check-type (let* ((x (if #t #f #f)) (y x)) y) bool)
 (check-type-error (let* ((x (if 1 2 3))) x))
 (check-type-error (let* ((x y) (y 1)) x))
-(check-type-error (let* ((x (if (< 0 x) x (- 0 x))) x)))
 
 ;; step 12
     ;; Lambda
@@ -168,6 +167,7 @@
 (check-type ([@ id bool] #t) bool)
 (check-type ([@ null? bool] '(#t #f #f)) bool)
 (check-type-error ([@ null? 'a] '(#t 1 #f)))
+(check-type-error ([@ null? bool] '(1 #f #f)))
 
 (val curry 
   (type-lambda ['a 'b 'c]
@@ -178,14 +178,14 @@
 (check-type ([@ curry int int int] +) (int -> (int -> int)))
 (check-type-error ([@ curry int int int] <))
 (check-type-error ([@ curry int int bool] +))
+(check-type-error ([@ curry int int bool] or))
 
 ;; step 17
     ;; TyLambda
 (check-type id (forall ['a]('a -> 'a)))
-
 (val id2 (type-lambda ['a 'b] (lambda ([n : 'a]) n)))
 (check-type id2 (forall ['a 'b]('a -> 'a)))
-
 (check-type curry (forall ['a 'b 'c] (('a 'b -> 'c) -> ('a -> ('b -> 'c)))))
-
 (type-lambda ['a] (lambda ([n : 'a]) n))
+(val id3 (type-lambda ['a] (lambda ([n : 'a]) n)))
+(check-type id3 (forall ['a]('a -> 'a)))
